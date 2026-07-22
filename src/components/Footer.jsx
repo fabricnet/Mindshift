@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion'
+import { useLang } from '../i18n.jsx'
 
 export default function Footer() {
+  const { t } = useLang()
+
   return (
     <section className="cta" id="contact">
       <motion.h2
@@ -9,16 +12,9 @@ export default function Footer() {
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       >
-        Ready to
+        {t.cta.line1}
         <br />
-        <span style={{
-          background: 'linear-gradient(120deg, var(--violet), var(--magenta), var(--cyan))',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          color: 'transparent',
-        }}>
-          shift?
-        </span>
+        <span className="accent">{t.cta.accent}</span>
       </motion.h2>
 
       <motion.a
@@ -31,13 +27,13 @@ export default function Footer() {
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.97 }}
       >
-        Start a project
+        {t.cta.btn}
       </motion.a>
 
       <div className="footer-bar">
-        <span>© {new Date().getFullYear()} Mindshift Agency</span>
+        <span>© {new Date().getFullYear()} {t.cta.rights}</span>
         <div className="links">
-          <a href="#top">Top</a>
+          <a href="#top">{t.cta.top}</a>
           <a href="https://instagram.com" target="_blank" rel="noreferrer">Instagram</a>
           <a href="https://linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
           <a href="mailto:hello@mindshift.agency">hello@mindshift.agency</a>

@@ -1,8 +1,6 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
-
-const line1 = ['Shift']
-const line2 = ['Your', 'Mind.']
+import { useLang } from '../i18n.jsx'
 
 const wordAnim = {
   hidden: { y: '110%' },
@@ -13,11 +11,14 @@ const wordAnim = {
 }
 
 export default function Hero() {
+  const { t } = useLang()
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '45%'])
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
   const scale = useTransform(scrollYProgress, [0, 1], [1, 0.85])
+
+  let wordIndex = 0
 
   return (
     <section className="hero" ref={ref} id="top">
@@ -28,32 +29,30 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
         >
-          Creative Agency — Est. 2020
+          {t.hero.kicker}
         </motion.p>
 
         <h1 className="hero-title">
-          <span className="line">
-            {line1.map((w, i) => (
-              <motion.span key={w} className="word" custom={i} variants={wordAnim} initial="hidden" animate="show">
-                {w}
-              </motion.span>
-            ))}
-          </span>
-          <span className="line">
-            {line2.map((w, i) => (
-              <motion.span
-                key={w}
-                className={`word ${w === 'Mind.' ? 'accent' : ''}`}
-                custom={i + 1}
-                variants={wordAnim}
-                initial="hidden"
-                animate="show"
-                style={{ marginRight: w === 'Your' ? '0.25em' : 0 }}
-              >
-                {w}
-              </motion.span>
-            ))}
-          </span>
+          {t.hero.title.map((line, li) => (
+            <span className="line" key={li}>
+              {line.map((word, wi) => {
+                const i = wordIndex++
+                return (
+                  <motion.span
+                    key={wi}
+                    className={`word ${word.accent ? 'accent' : ''}`}
+                    custom={i}
+                    variants={wordAnim}
+                    initial="hidden"
+                    animate="show"
+                    style={{ marginInlineEnd: wi < line.length - 1 ? '0.25em' : 0 }}
+                  >
+                    {word.w}
+                  </motion.span>
+                )
+              })}
+            </span>
+          ))}
         </h1>
 
         <motion.p
@@ -62,8 +61,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
         >
-          We build brands, digital experiences and campaigns that bend perception —
-          and move people to act.
+          {t.hero.sub}
         </motion.p>
       </motion.div>
 
@@ -74,7 +72,7 @@ export default function Hero() {
         transition={{ delay: 1.4, duration: 1 }}
         style={{ opacity }}
       >
-        <span>Scroll</span>
+        <span>{t.hero.scroll}</span>
         <motion.div
           className="wheel"
           animate={{ scaleY: [1, 0.4, 1], opacity: [1, 0.4, 1] }}
