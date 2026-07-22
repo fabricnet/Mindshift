@@ -1,12 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'
-
-const stats = [
-  { value: 120, suffix: '+', label: 'Brands shifted' },
-  { value: 14, suffix: '', label: 'Design awards' },
-  { value: 6, suffix: '', label: 'Countries' },
-  { value: 98, suffix: '%', label: 'Clients return' },
-]
+import { useLang } from '../i18n.jsx'
 
 function Counter({ value, suffix }) {
   const ref = useRef(null)
@@ -28,10 +22,12 @@ function Counter({ value, suffix }) {
 }
 
 export default function Stats() {
+  const { t } = useLang()
+
   return (
     <section className="section" id="stats">
       <div className="stats-grid">
-        {stats.map((s, i) => (
+        {t.stats.map((s, i) => (
           <motion.div
             key={s.label}
             initial={{ opacity: 0, y: 40 }}

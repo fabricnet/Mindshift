@@ -1,5 +1,7 @@
 import { useRef } from 'react'
 import { motion, useScroll, useSpring, useMotionValueEvent } from 'framer-motion'
+import { LanguageProvider, useLang } from './i18n.jsx'
+import LogoMark from './components/Logo.jsx'
 import Scene3D from './components/Scene3D.jsx'
 import Hero from './components/Hero.jsx'
 import Manifesto from './components/Manifesto.jsx'
@@ -8,7 +10,8 @@ import Work from './components/Work.jsx'
 import Stats from './components/Stats.jsx'
 import Footer from './components/Footer.jsx'
 
-export default function App() {
+function Site() {
+  const { lang, toggle, t } = useLang()
   const { scrollYProgress } = useScroll()
   const progressBar = useSpring(scrollYProgress, { stiffness: 120, damping: 30 })
 
@@ -24,19 +27,26 @@ export default function App() {
 
       <nav className="nav">
         <a href="#top" className="nav-logo">
-          MIND<span>SHIFT</span>
+          <LogoMark size={30} />
+          <span dir="ltr">MIND<span className="accent">SHIFT</span></span>
         </a>
-        <div className="nav-links">
-          <a href="#about">About</a>
-          <a href="#services">Services</a>
-          <a href="#work">Work</a>
-          <a href="#contact">Contact</a>
+        <div className="nav-right">
+          <div className="nav-links">
+            <a href="#about">{t.nav.about}</a>
+            <a href="#services">{t.nav.services}</a>
+            <a href="#work">{t.nav.work}</a>
+            <a href="#contact">{t.nav.contact}</a>
+          </div>
+          <button className="lang-toggle" onClick={toggle} aria-label="Switch language">
+            {lang === 'en' ? 'עברית' : 'EN'}
+          </button>
         </div>
       </nav>
 
       <Scene3D scrollRef={scrollRef} />
 
-      <main className="content-layer">
+      {/* key remounts the content on language switch so entrance animations replay */}
+      <main className="content-layer" key={lang}>
         <Hero />
         <Manifesto />
         <Services />
@@ -45,5 +55,13 @@ export default function App() {
         <Footer />
       </main>
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <Site />
+    </LanguageProvider>
   )
 }

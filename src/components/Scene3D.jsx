@@ -7,8 +7,8 @@ import * as THREE from 'three'
 function MindCore({ scrollRef }) {
   const mesh = useRef()
   const mat = useRef()
-  const colorA = useMemo(() => new THREE.Color('#8b5cf6'), [])
-  const colorB = useMemo(() => new THREE.Color('#22d3ee'), [])
+  const colorA = useMemo(() => new THREE.Color('#c3713f'), [])
+  const colorB = useMemo(() => new THREE.Color('#646b59'), [])
   const tmp = useMemo(() => new THREE.Color(), [])
 
   useFrame((state) => {
@@ -36,8 +36,8 @@ function MindCore({ scrollRef }) {
         <icosahedronGeometry args={[1.7, 32]} />
         <MeshDistortMaterial
           ref={mat}
-          roughness={0.15}
-          metalness={0.85}
+          roughness={0.35}
+          metalness={0.45}
           distort={0.4}
           speed={2}
         />
@@ -61,7 +61,7 @@ function Shell({ scrollRef }) {
   return (
     <mesh ref={mesh}>
       <icosahedronGeometry args={[3.2, 1]} />
-      <meshBasicMaterial color="#8b5cf6" wireframe transparent opacity={0.08} />
+      <meshBasicMaterial color="#7f6c5b" wireframe transparent opacity={0.14} />
     </mesh>
   )
 }
@@ -95,7 +95,7 @@ function Particles({ scrollRef, count = 2600 }) {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.02} color="#a78bfa" transparent opacity={0.55} sizeAttenuation depthWrite={false} />
+      <pointsMaterial size={0.022} color="#7f6c5b" transparent opacity={0.5} sizeAttenuation depthWrite={false} />
     </points>
   )
 }
@@ -116,15 +116,15 @@ export default function Scene3D({ scrollRef }) {
   return (
     <div className="scene-layer">
       <Canvas camera={{ position: [0, 0, 6], fov: 50 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[5, 5, 5]} intensity={1.4} color="#c4b5fd" />
-        <pointLight position={[-6, -4, -4]} intensity={30} color="#22d3ee" />
-        <pointLight position={[6, 4, 2]} intensity={24} color="#e879f9" />
+        <ambientLight intensity={0.9} />
+        <directionalLight position={[5, 5, 5]} intensity={1.6} color="#fff6ea" />
+        <pointLight position={[-6, -4, -4]} intensity={22} color="#c3713f" />
+        <pointLight position={[6, 4, 2]} intensity={16} color="#a29c7e" />
         <MindCore scrollRef={scrollRef} />
         <Shell scrollRef={scrollRef} />
         <Particles scrollRef={scrollRef} />
         <CameraRig scrollRef={scrollRef} />
-        <fog attach="fog" args={['#050507', 8, 18]} />
+        <fog attach="fog" args={['#e4e4dc', 8, 18]} />
       </Canvas>
     </div>
   )
