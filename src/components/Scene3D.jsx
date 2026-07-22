@@ -1,47 +1,96 @@
 import { useRef, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { MeshDistortMaterial, Float } from '@react-three/drei'
-import * as THREE from 'three'
+import { Float } from '@react-three/drei'
 
-/* Morphing core object — rotation, color and distortion are driven by scroll progress */
-function MindCore({ scrollRef }) {
-  const mesh = useRef()
-  const mat = useRef()
-  const colorA = useMemo(() => new THREE.Color('#c3713f'), [])
-  const colorB = useMemo(() => new THREE.Color('#646b59'), [])
-  const tmp = useMemo(() => new THREE.Color(), [])
+/* screw-thread rings on the bulb base: [y position, radius] */
+const threads = [
+  [-1.02, 0.45],
+  [-1.18, 0.42],
+  [-1.34, 0.39],
+]
+
+/* Lightbulb hero object — blinks like a real filament and rolls with scroll */
+function LightBulb({ scrollRef }) {
+  const group = useRef()
+  const filMat = useRef()
+  const glow = useRef()
+  const glassMat = useRef()
 
   useFrame((state) => {
     const p = scrollRef.current
     const t = state.clock.elapsedTime
-    if (mesh.current) {
-      mesh.current.rotation.x = t * 0.12 + p * Math.PI * 1.5
-      mesh.current.rotation.y = t * 0.18 + p * Math.PI * 2.5
-      // drift the core sideways and back as the page scrolls
-      mesh.current.position.x = Math.sin(p * Math.PI * 2) * 1.6
-      mesh.current.position.z = -p * 2
-      const s = 1 + p * 0.6
-      mesh.current.scale.setScalar(s)
-    }
-    if (mat.current) {
-      mat.current.distort = 0.35 + p * 0.35 + Math.sin(t * 0.6) * 0.05
-      tmp.copy(colorA).lerp(colorB, (Math.sin(p * Math.PI * 2) + 1) / 2)
-      mat.current.color = tmp
+
+    // irregular blink: mostly lit with quick dips, over a slow breathing pulse
+    const w = Math.sin(t * 7.3) * Math.sin(t * 13.1 + 2) * Math.sin(t * 3.7 + 1)
+    const on = w > -0.82 ? 1 : 0.08
+    const pulse = 0.8 + 0.2 * Math.sin(t * 2.2)
+    const level = on * pulse * (1 + p * 0.8)
+
+    if (filMat.current) filMat.current.emissiveIntensity = 0.4 + level * 3.2
+    if (glow.current) glow.current.intensity = level * 14
+    if (glassMat.current) glassMat.current.opacity = 0.1 + level * 0.08
+
+    if (group.current) {
+      // rolls forward as the page scrolls, with a lazy idle tumble
+      group.current.rotation.z = -p * Math.PI * 5 + Math.sin(t * 0.4) * 0.08
+      group.current.rotation.y = t * 0.12 + p * Math.PI * 1.5
+      group.current.position.x = Math.sin(p * Math.PI * 2) * 1.7
+      group.current.position.z = -p * 1.5
+      group.current.scale.setScalar(0.95 + p * 0.5)
     }
   })
 
   return (
-    <Float speed={1.4} rotationIntensity={0.4} floatIntensity={0.8}>
-      <mesh ref={mesh}>
-        <icosahedronGeometry args={[1.7, 32]} />
-        <MeshDistortMaterial
-          ref={mat}
-          roughness={0.35}
-          metalness={0.45}
-          distort={0.4}
-          speed={2}
-        />
-      </mesh>
+    <Float speed={1.3} rotationIntensity={0.25} floatIntensity={0.7}>
+      <group ref={group}>
+        {/* glass globe */}
+        <mesh position={[0, 0.45, 0]}>
+          <sphereGeometry args={[1.15, 48, 48]} />
+          <meshPhysicalMaterial
+            ref={glassMat}
+            color="#f7e9d6"
+            roughness={0.08}
+            metalness={0}
+            transparent
+            opacity={0.15}
+            depthWrite={false}
+          />
+        </mesh>
+        {/* filament coil */}
+        <mesh position={[0, 0.4, 0]}>
+          <torusKnotGeometry args={[0.3, 0.05, 120, 12, 2, 3]} />
+          <meshStandardMaterial
+            ref={filMat}
+            color="#c3713f"
+            emissive="#ff9a3c"
+            emissiveIntensity={2.5}
+            roughness={0.4}
+          />
+        </mesh>
+        {/* light cast by the filament */}
+        <pointLight ref={glow} position={[0, 0.4, 0]} intensity={12} distance={9} color="#ffb066" />
+        {/* glass neck */}
+        <mesh position={[0, -0.75, 0]}>
+          <cylinderGeometry args={[0.4, 0.52, 0.5, 32]} />
+          <meshPhysicalMaterial color="#f7e9d6" transparent opacity={0.15} roughness={0.1} depthWrite={false} />
+        </mesh>
+        {/* screw base */}
+        <mesh position={[0, -1.18, 0]}>
+          <cylinderGeometry args={[0.44, 0.36, 0.55, 32]} />
+          <meshStandardMaterial color="#7f6c5b" metalness={0.85} roughness={0.35} />
+        </mesh>
+        {threads.map(([y, r]) => (
+          <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[r, 0.035, 12, 32]} />
+            <meshStandardMaterial color="#8a7766" metalness={0.9} roughness={0.3} />
+          </mesh>
+        ))}
+        {/* contact tip */}
+        <mesh position={[0, -1.52, 0]}>
+          <sphereGeometry args={[0.15, 16, 16]} />
+          <meshStandardMaterial color="#646b59" metalness={0.8} roughness={0.4} />
+        </mesh>
+      </group>
     </Float>
   )
 }
@@ -120,7 +169,7 @@ export default function Scene3D({ scrollRef }) {
         <directionalLight position={[5, 5, 5]} intensity={1.6} color="#fff6ea" />
         <pointLight position={[-6, -4, -4]} intensity={22} color="#c3713f" />
         <pointLight position={[6, 4, 2]} intensity={16} color="#a29c7e" />
-        <MindCore scrollRef={scrollRef} />
+        <LightBulb scrollRef={scrollRef} />
         <Shell scrollRef={scrollRef} />
         <Particles scrollRef={scrollRef} />
         <CameraRig scrollRef={scrollRef} />
